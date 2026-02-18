@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <!-- Variant 3: Urban Plan — Abstract "PU" as building footprints -->
+  <g>
+    <!-- Abstract P shape — like a building footprint from above -->
+    <rect x="0" y="10" width="8" height="100" fill="#ffffff"/>
+    <rect x="0" y="10" width="40" height="8" fill="#ffffff"/>
+    <rect x="0" y="46" width="40" height="8" fill="#ffffff"/>
+    <rect x="32" y="10" width="8" height="44" fill="#ffffff"/>
+
+    <!-- Abstract U shape -->
+    <rect x="54" y="10" width="8" height="100" fill="#ffffff"/>
+    <rect x="54" y="102" width="40" height="8" fill="#ffffff"/>
+    <rect x="86" y="10" width="8" height="100" fill="#ffffff"/>
+
+    <!-- Text to the right -->
+    <text x="114" y="46" font-family="'Inter', 'Helvetica Neue', sans-serif" font-weight="400" font-size="18" letter-spacing="8" fill="#ffffff">PRATIQUES</text>
+    <text x="114" y="78" font-family="'Inter', 'Helvetica Neue', sans-serif" font-weight="400" font-size="18" letter-spacing="8" fill="#ffffff">URBAINES</text>
+  </g>
+</svg>
