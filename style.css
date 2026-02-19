@@ -1,0 +1,1116 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PRATIQUES URBAINES · draft_2
+   Palette: #0A0A0A (black), #ECECEC (white), gradations in between
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Variables ─────────────────────────────────────────────────── */
+:root {
+  --black:       #0A0A0A;
+  --white:       #ECECEC;
+  --gray-100:    #141414;
+  --gray-150:    #1e1e1e;
+  --gray-200:    #282828;
+  --gray-400:    #585858;
+  --gray-500:    #787878;
+  --gray-600:    #9a9a9a;
+  --gray-700:    #c0c0c0;
+
+  /* Cards — Cadre style: light wash + blur, no full border */
+  --card-bg:       rgba(255, 255, 255, 0.35);
+  --card-border:   rgba(10, 10, 10, 0.10);   /* kept for card__tag + section__quote */
+  --card-blur:     8px;
+  --cadre-color:   #0A0A0A;                  /* corner mark colour */
+  --cadre-size:    12px;                     /* length of each corner arm */
+  --cadre-opacity: 0.28;
+
+  /* Nav — LEFT side */
+  --nav-item-h:  60px;   /* height of each nav item slot */
+  --nav-visible: 4;      /* items visible at once in the clipped viewport */
+  --nav-vp-h:    calc(var(--nav-item-h) * var(--nav-visible)); /* 240px */
+  --nav-width:   140px;  /* width of the nav text column */
+
+  /* Typography */
+  --font-sans:   'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-serif:  'DM Serif Display', Georgia, serif;
+
+  /* Spacing */
+  --space-xs:    0.5rem;
+  --space-sm:    1rem;
+  --space-md:    1.5rem;
+  --space-lg:    2.5rem;
+  --space-xl:    4rem;
+  --space-2xl:   6rem;
+
+  /* Layout — nav is LEFT, logo is RIGHT */
+  --content-max:  820px;
+  --side-pad:     2rem;
+  --left-offset:  190px;   /* left padding to clear nav column */
+  --right-pad:    3rem;    /* right padding (just visual breathing room, logo is fixed) */
+}
+
+/* ── Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  /* Proximity snap: gently snaps to section starts without trapping
+     users inside tall sections (Productions, Parcours, etc.) */
+  scroll-snap-type: y proximity;
+  overflow-y: scroll;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--black);
+  /* The territory drawing is the permanent visual ground — always fully lit.
+     No darkness overlay; the drawing breathes through every section. */
+  background-color: #f5f5f0;
+  background-image: url('images/bg-v2.png');
+  background-attachment: fixed;
+  background-size: cover;
+  /* JS will animate this from 0% (hero) to 100% (contact)
+     revealing different strates of the territory drawing as you descend */
+  background-position: center 0%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Background overlay — disabled (progressive darkness removed) ─ */
+.dark-overlay {
+  display: none;
+}
+
+/* ── Fixed Logo — top RIGHT ─────────────────────────────────────── */
+.site-logo {
+  position: fixed;
+  top: var(--side-pad);
+  right: var(--side-pad);
+  z-index: 200;
+  text-decoration: none;
+  display: block;
+  /* Dark logo on light background — no filter needed */
+  transition: opacity 0.35s ease;
+}
+
+/* When logo is an <img> */
+.site-logo img {
+  display: block;
+  width: 110px;
+  height: auto;
+}
+
+/* Fallback: when logo is still inline SVG */
+.site-logo svg {
+  display: block;
+  width: 130px;
+  height: auto;
+  color: var(--black);
+}
+
+.site-logo:hover {
+  opacity: 0.75;
+}
+
+/* Logo is dark marks on transparent PNG — reads naturally on the light drawing */
+
+/* ── Section Nav — LEFT side, slot-machine ──────────────────────── */
+.section-nav {
+  position: fixed;
+  left: var(--side-pad);   /* ← LEFT */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+}
+
+/* Clipping viewport — shows only N items at a time */
+.section-nav__viewport {
+  position: relative;
+  height: var(--nav-vp-h);   /* 240px = 4 × 60px */
+  overflow: hidden;
+  width: var(--nav-width);   /* 140px */
+  /*
+     Fade mask at top & bottom edges so items dissolve in/out
+     naturally as they slide through — reinforces the strates metaphor
+  */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0,0,0,0.5) 12%,
+    rgba(0,0,0,1) 28%,
+    rgba(0,0,0,1) 72%,
+    rgba(0,0,0,0.5) 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0,0,0,0.5) 12%,
+    rgba(0,0,0,1) 28%,
+    rgba(0,0,0,1) 72%,
+    rgba(0,0,0,0.5) 88%,
+    transparent 100%
+  );
+}
+
+/* The sliding column — all section names stacked vertically */
+.section-nav__list {
+  list-style: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  /* translateY driven by JS scroll handler */
+  transform: translateY(0);
+  transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* Each name occupies one slot */
+.section-nav__item {
+  height: var(--nav-item-h);   /* 60px */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;  /* left-aligned */
+}
+
+/* Base link style — "future" items, slightly visible */
+.section-nav__link {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--black);
+  text-align: left;
+  padding: 0.2rem 0;
+  /* Future items — present but quiet */
+  opacity: 0.28;
+  transition: opacity 0.25s ease, font-weight 0.25s ease, letter-spacing 0.25s ease;
+  white-space: nowrap;
+}
+
+/* Active — the section you're currently scrolling through */
+.section-nav__item.is-active .section-nav__link {
+  opacity: 1;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+
+/* Past — already visited, still readable, softer */
+.section-nav__item.is-past .section-nav__link {
+  opacity: 0.55;
+  font-weight: 300;
+}
+
+/* Hover — any item */
+.section-nav__link:hover {
+  opacity: 0.85;
+}
+
+/* ── Mobile dot nav — hidden on desktop ─────────────────────────── */
+.section-nav__dots {
+  display: none;
+}
+
+/* ── Main content ───────────────────────────────────────────────── */
+.site-main {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Sections ───────────────────────────────────────────────────── */
+.section {
+  min-height: 100vh;
+  position: relative;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.section__inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  /* Not centered — left-anchored so content always starts right after the nav */
+  max-width: calc(var(--left-offset) + var(--content-max) + var(--right-pad));
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--right-pad) var(--space-xl) var(--left-offset);
+  flex: 1;
+}
+
+/* ── Section Headers ────────────────────────────────────────────── */
+.section__header {
+  margin-bottom: var(--space-xl);
+}
+
+.section__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  line-height: 1.1;
+  color: var(--black);
+  margin-bottom: var(--space-md);
+  letter-spacing: -0.01em;
+}
+
+.section__lead {
+  font-size: 0.96rem;
+  font-weight: 400;
+  color: #3c3c3c;
+  line-height: 1.75;
+  max-width: 560px;
+}
+
+.section__quote {
+  margin-top: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
+  border-left: 1px solid rgba(10, 10, 10, 0.18);
+  background: var(--card-bg);
+  backdrop-filter: blur(var(--card-blur));
+  -webkit-backdrop-filter: blur(var(--card-blur));
+}
+
+.section__quote p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--black);
+  margin-bottom: var(--space-xs);
+}
+
+.section__quote cite {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a7a7a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════════════ */
+.section--hero {
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* No gradient — the drawing is always fully visible */
+
+.hero__inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100vh;
+  padding-bottom: var(--space-2xl);
+  position: relative;
+  z-index: 2;   /* above the gradient */
+}
+
+.hero__eyebrow {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--black);
+  margin-bottom: var(--space-lg);
+}
+
+.hero__name {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(4.5rem, 11vw, 8rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--black);
+  margin-bottom: var(--space-xl);
+}
+
+.hero__tagline {
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--black);
+  margin-bottom: var(--space-sm);
+}
+
+.hero__sub {
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: #4a4a4a;
+}
+
+/* ── Fixed scroll hint — bottom RIGHT ───────────────────────────── */
+.scroll-hint {
+  position: fixed;
+  bottom: 2.5rem;
+  right: var(--side-pad);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  z-index: 200;
+  pointer-events: none;
+  /* JS drives opacity for hero-only visibility */
+  transition: opacity 0.6s ease;
+}
+
+.scroll-hint__label {
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.scroll-hint__line {
+  display: block;
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(
+    to bottom,
+    #6a6a6a 0%,
+    #8a8a8a 55%,
+    transparent 100%
+  );
+  animation: scrollDrop 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  transform-origin: top center;
+}
+
+/*
+  The line "travels" downward in a loop — like a plumb-bob sinking
+  through the strates. Three phases:
+  1. Fade in from top (clip-path grows down)
+  2. Hold full opacity mid-scroll
+  3. Fade out and reset
+*/
+@keyframes scrollDrop {
+  0%   { opacity: 0;   transform: translateY(-6px); }
+  20%  { opacity: 1;   transform: translateY(0); }
+  65%  { opacity: 0.8; transform: translateY(6px); }
+  100% { opacity: 0;   transform: translateY(12px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARDS — Cadre (architectural corner marks)
+   No full border. Four L-shaped corner marks drawn via ::before
+   using 8 single-pixel gradient lines. Subtle blur wash underneath
+   so text reads against the background drawing.
+   ═══════════════════════════════════════════════════════════════════ */
+.card {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(var(--card-blur));
+  -webkit-backdrop-filter: blur(var(--card-blur));
+  border: none;
+  padding: var(--space-md) var(--space-lg);
+}
+
+/* The four corner marks — 8 solid 1px lines via multiple backgrounds */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--cadre-opacity);
+  transition: opacity 0.3s ease;
+  background:
+    /* top-left */
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 0 0       / var(--cadre-size) 1px no-repeat,
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 0 0       / 1px var(--cadre-size) no-repeat,
+    /* top-right */
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 100% 0    / var(--cadre-size) 1px no-repeat,
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 100% 0    / 1px var(--cadre-size) no-repeat,
+    /* bottom-left */
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 0 100%    / var(--cadre-size) 1px no-repeat,
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 0 100%    / 1px var(--cadre-size) no-repeat,
+    /* bottom-right */
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 100% 100% / var(--cadre-size) 1px no-repeat,
+    linear-gradient(var(--cadre-color), var(--cadre-color)) 100% 100% / 1px var(--cadre-size) no-repeat;
+}
+
+/* Intensify corners on hover */
+.card:hover::before {
+  opacity: 0.55;
+}
+
+/* Hover state for interactive card types — slightly more opaque wash */
+.card--event,
+.card--project {
+  transition: background 0.3s ease;
+  cursor: default;
+}
+
+.card--event:hover,
+.card--project:hover {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+/* Book card info panel — part of a composite layout, suppress its own corners
+   so the cover+info unit reads as a single object */
+.book-card .card::before {
+  display: none;
+}
+
+/* Grid layouts */
+.cards-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.cards-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cards-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.card__title {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+  margin-bottom: var(--space-sm);
+}
+
+.card__text {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: #4a4a4a;
+}
+
+/* Event cards */
+.card--event .card__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: var(--space-sm);
+}
+
+.card__tag {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  border: 1px solid var(--card-border);
+  padding: 0.2rem 0.5rem;
+}
+
+.card__date {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+}
+
+.card__location {
+  margin-top: var(--space-sm);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+}
+
+/* Project cards */
+.card--project .card__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+.card__period {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+}
+
+.card__role {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: #6a6a6a;
+  margin-bottom: var(--space-sm);
+  margin-top: calc(-1 * var(--space-xs));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRODUCTIONS — Books
+   ═══════════════════════════════════════════════════════════════════ */
+.productions__block {
+  margin-bottom: var(--space-2xl);
+}
+
+.productions__subtitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid rgba(10, 10, 10, 0.10);
+}
+
+.books-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.book-card {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 0;
+}
+
+.book-card__cover {
+  background: rgba(10, 10, 10, 0.04);
+  border: 1px solid var(--card-border);
+  border-right: none;
+  aspect-ratio: 2/3;
+  max-height: 220px;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.book-card__cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(10,10,10,0.03) 0%, transparent 60%);
+}
+
+.book-card__cover-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.book-card__cover-year {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: #8a8a8a;
+  margin-bottom: 0.25rem;
+}
+
+.book-card__cover-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  color: #4a4a4a;
+}
+
+.book-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.book-card__title {
+  font-weight: 500;
+  font-size: 0.88rem;
+  color: var(--black);
+  letter-spacing: 0.02em;
+}
+
+.book-card__subtitle {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #6a6a6a;
+}
+
+.book-card__meta {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+}
+
+.book-card__desc {
+  font-size: 0.86rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  margin-top: 0.25rem;
+}
+
+.book-card__isbn {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: #9a9a9a;
+  margin-top: auto;
+}
+
+/* ─ Articles list ─────────────────────────────────────────────── */
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.article-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+}
+
+.article-row:last-child {
+  border-bottom: none;
+}
+
+.article-row__date {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+  padding-top: 0.15rem;
+}
+
+.article-row__title {
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: #3c3c3c;
+  margin-bottom: 0.2rem;
+}
+
+.article-row__source {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: #8a8a8a;
+}
+
+/* ─ Media list ────────────────────────────────────────────────── */
+.media-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.media-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: var(--space-md);
+  align-items: flex-start;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+}
+
+.media-row:last-child {
+  border-bottom: none;
+}
+
+.media-row__icon {
+  color: #8a8a8a;
+  padding-top: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-row__title {
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: #3c3c3c;
+  margin-bottom: 0.2rem;
+}
+
+.media-row__source {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: #8a8a8a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PROJETS — Partners
+   ═══════════════════════════════════════════════════════════════════ */
+.partners {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--card-border);
+}
+
+.partners__label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6a6a6a;
+  margin-bottom: var(--space-sm);
+}
+
+.partners__list {
+  font-size: 0.84rem;
+  font-weight: 400;
+  line-height: 2;
+  color: #4a4a4a;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PARCOURS
+   ═══════════════════════════════════════════════════════════════════ */
+.parcours__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  align-items: start;
+}
+
+.parcours__bio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.bio__lead {
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: var(--black);
+}
+
+.bio__text {
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: #4a4a4a;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline__item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+}
+
+.timeline__item:last-child {
+  border-bottom: none;
+}
+
+.timeline__year {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: #8a8a8a;
+  padding-top: 0.15rem;
+  white-space: nowrap;
+}
+
+.timeline__item p {
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: #4a4a4a;
+}
+
+.timeline__item em {
+  font-style: italic;
+  color: #4a4a4a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONTACT
+   ═══════════════════════════════════════════════════════════════════ */
+.section--contact {
+  justify-content: flex-start;
+}
+
+.contact__inner {
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.contact__email {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  color: var(--black);
+  text-decoration: none;
+  transition: opacity 0.3s;
+  letter-spacing: -0.01em;
+}
+
+.contact__email:hover {
+  opacity: 0.65;
+}
+
+.contact__links {
+  display: flex;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.contact__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6a6a6a;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.contact__link:hover {
+  color: var(--black);
+}
+
+.site-footer {
+  margin-top: auto;
+  padding: var(--space-lg) 0 var(--space-lg);
+  border-top: 1px solid rgba(10, 10, 10, 0.10);
+}
+
+.site-footer p {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCROLL ENTRANCE ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════ */
+.card,
+.book-card,
+.timeline__item,
+.article-row,
+.media-row {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.card.in-view,
+.book-card.in-view,
+.timeline__item.in-view,
+.article-row.in-view,
+.media-row.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Book card info panel inherits visibility from .book-card parent —
+   no separate animation needed to avoid double-fade */
+.book-card .card {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* Stagger delays via nth-child */
+.cards-grid .card:nth-child(2) { transition-delay: 0.06s; }
+.cards-grid .card:nth-child(3) { transition-delay: 0.12s; }
+.cards-grid .card:nth-child(4) { transition-delay: 0.18s; }
+.cards-grid .card:nth-child(5) { transition-delay: 0.24s; }
+.cards-grid .card:nth-child(6) { transition-delay: 0.30s; }
+
+.articles-list .article-row:nth-child(2) { transition-delay: 0.05s; }
+.articles-list .article-row:nth-child(3) { transition-delay: 0.10s; }
+.articles-list .article-row:nth-child(4) { transition-delay: 0.15s; }
+.articles-list .article-row:nth-child(5) { transition-delay: 0.20s; }
+.articles-list .article-row:nth-child(6) { transition-delay: 0.25s; }
+.articles-list .article-row:nth-child(7) { transition-delay: 0.30s; }
+
+.media-list .media-row:nth-child(2) { transition-delay: 0.06s; }
+.media-list .media-row:nth-child(3) { transition-delay: 0.12s; }
+.media-list .media-row:nth-child(4) { transition-delay: 0.18s; }
+.media-list .media-row:nth-child(5) { transition-delay: 0.24s; }
+
+.books-list .book-card:nth-child(2) { transition-delay: 0.08s; }
+.books-list .book-card:nth-child(3) { transition-delay: 0.16s; }
+
+.timeline .timeline__item:nth-child(2) { transition-delay: 0.06s; }
+.timeline .timeline__item:nth-child(3) { transition-delay: 0.12s; }
+.timeline .timeline__item:nth-child(4) { transition-delay: 0.18s; }
+.timeline .timeline__item:nth-child(5) { transition-delay: 0.24s; }
+.timeline .timeline__item:nth-child(6) { transition-delay: 0.30s; }
+.timeline .timeline__item:nth-child(7) { transition-delay: 0.36s; }
+
+/* Hero text animations */
+.hero__eyebrow,
+.hero__name,
+.hero__tagline,
+.hero__sub {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: heroFadeUp 0.8s ease forwards;
+}
+.hero__eyebrow { animation-delay: 0.1s; }
+.hero__name    { animation-delay: 0.25s; }
+.hero__tagline { animation-delay: 0.45s; }
+.hero__sub     { animation-delay: 0.55s; }
+
+@keyframes heroFadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (≤ 1024px)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root {
+    --left-offset: 150px;
+    --nav-width:   110px;
+  }
+
+  .cards-grid--3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .parcours__layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤ 768px)
+   "Scrolling through strates" — nav becomes vertical dots on the LEFT
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root {
+    --side-pad:    1.25rem;
+    --left-offset: 1.25rem;   /* content goes full-width on mobile */
+    --right-pad:   1.25rem;
+    --space-xl:    3rem;
+    --space-2xl:   4rem;
+    --nav-item-h:  44px;
+    --nav-visible: 3;
+  }
+
+  html {
+    scroll-snap-type: y proximity;
+  }
+
+  /* Logo — smaller on mobile */
+  .site-logo img,
+  .site-logo svg {
+    width: 90px;
+  }
+
+  /* Nav: hide text column, show compact dots on the LEFT */
+  .section-nav {
+    left: 1rem;     /* keep left */
+    transform: translateY(-50%);
+  }
+
+  .section-nav__viewport {
+    display: none;
+  }
+
+  .section-nav__dots {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .dot {
+    display: block;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(10,10,10,0.25);
+    transition: background 0.3s, transform 0.3s;
+    cursor: pointer;
+  }
+
+  .dot.is-active {
+    background: var(--black);
+    transform: scale(1.8);
+  }
+
+  /* Sections: full-width, padding-left only for dots (24px) */
+  .section__inner {
+    padding: var(--space-xl) var(--side-pad) var(--space-lg);
+    padding-left: calc(var(--side-pad) + 24px);  /* dots clearance */
+    max-width: 100%;
+  }
+
+  /* Hero */
+  .hero__inner {
+    padding-bottom: var(--space-xl);
+  }
+
+  .hero__name {
+    font-size: clamp(3rem, 14vw, 5rem);
+  }
+
+  /* Grids: single column */
+  .cards-grid--3,
+  .cards-grid--2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Books: stack cover + info */
+  .book-card {
+    grid-template-columns: 100px 1fr;
+  }
+
+  .book-card__cover {
+    max-height: 150px;
+  }
+
+  /* Parcours */
+  .parcours__layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+
+  /* Contact email size */
+  .contact__email {
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+    word-break: break-all;
+  }
+
+  .contact__links {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — Small mobile (≤ 480px)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .book-card {
+    grid-template-columns: 1fr;
+  }
+
+  .book-card__cover {
+    max-height: 120px;
+    aspect-ratio: auto;
+    border-right: 1px solid var(--card-border);
+    border-bottom: none;
+  }
+
+  .section__quote p {
+    font-size: 1rem;
+  }
+}

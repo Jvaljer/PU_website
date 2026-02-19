@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Variants — Pratiques Urbaines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    /* ── Base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0A0A0A;
+      --white: #ECECEC;
+      --gray-400: #585858;
+      --gray-500: #787878;
+      --gray-600: #9a9a9a;
+      --gray-700: #c0c0c0;
+      --font-sans: 'Inter', 'Helvetica Neue', sans-serif;
+      --font-serif: 'DM Serif Display', Georgia, serif;
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--white);
+      /* Neutral dark grey — no background drawing, no overlay noise.
+         Pure context for evaluating card aesthetics. */
+      background-color: #1e1e1e;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      padding: 4rem 3rem 6rem;
+      max-width: 1300px;
+    }
+
+    /* ── Page header ──────────────────────────────────────────────── */
+    .page-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .page-sub {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 3.5rem;
+    }
+
+    /* ── Row layout — one variant per column ─────────────────────── */
+    .variants {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .variant-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .variant-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .variant-label__name {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .variant-label__desc {
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: var(--gray-600);
+    }
+
+    /* Divider */
+    .variant-divider {
+      width: 24px;
+      height: 1px;
+      background: rgba(236,236,236,0.25);
+    }
+
+    /* ── Shared card content (tag + title + text) ─────────────────── */
+    .card-meta {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .card-tag {
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      border: 1px solid rgba(236,236,236,0.12);
+      padding: 0.15rem 0.45rem;
+    }
+
+    .card-date {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      color: var(--gray-500);
+    }
+
+    .card-title {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-text {
+      font-size: 0.86rem;
+      line-height: 1.75;
+      color: var(--gray-700);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VARIANT A — Strate
+       Just horizontal lines. Content hovers directly on the background.
+       References the geological strata — no glass, no box, pure line.
+    ══════════════════════════════════════════════════════════════ */
+    .card--strate {
+      padding: 1.25rem 0;
+      border-top: 1px solid rgba(236, 236, 236, 0.18);
+      border-bottom: 1px solid rgba(236, 236, 236, 0.06);
+      transition: border-top-color 0.3s ease;
+      cursor: default;
+    }
+
+    .card--strate:hover {
+      border-top-color: rgba(236, 236, 236, 0.40);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VARIANT B — Cadre
+       No border around the card; only four small architectural
+       corner-marks (L-shapes). Like annotations on a plan.
+    ══════════════════════════════════════════════════════════════ */
+    .card--cadre {
+      position: relative;
+      padding: 1.4rem 1.2rem;
+      cursor: default;
+    }
+
+    /* The four corners use two pseudo-elements with box-shadow trickery */
+    .card--cadre::before,
+    .card--cadre::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: rgba(236, 236, 236, 0.35);
+      border-style: solid;
+      transition: border-color 0.3s ease;
+    }
+
+    .card--cadre::before {
+      top: 0;
+      left: 0;
+      border-width: 1px 0 0 1px;   /* top-left corner */
+    }
+
+    .card--cadre::after {
+      bottom: 0;
+      right: 0;
+      border-width: 0 1px 1px 0;   /* bottom-right corner */
+    }
+
+    /* Inner element carries the other two corners */
+    .card--cadre .cadre-inner::before,
+    .card--cadre .cadre-inner::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: rgba(236, 236, 236, 0.35);
+      border-style: solid;
+      transition: border-color 0.3s ease;
+    }
+
+    .card--cadre .cadre-inner::before {
+      top: 0;
+      right: 0;
+      border-width: 1px 1px 0 0;   /* top-right corner */
+    }
+
+    .card--cadre .cadre-inner::after {
+      bottom: 0;
+      left: 0;
+      border-width: 0 0 1px 1px;   /* bottom-left corner */
+    }
+
+    .card--cadre:hover::before,
+    .card--cadre:hover::after,
+    .card--cadre:hover .cadre-inner::before,
+    .card--cadre:hover .cadre-inner::after {
+      border-color: rgba(236, 236, 236, 0.65);
+    }
+
+    .cadre-inner {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VARIANT C — Verre dépoli (refined glass)
+       Very light fill (`rgba(236,236,236,0.05)`) — almost inverted
+       from the current dark glass — so the background drawing shines
+       through like tracing paper laid on an architectural plan.
+       Strong blur, left-accent border only.
+    ══════════════════════════════════════════════════════════════ */
+    .card--verre {
+      background: rgba(236, 236, 236, 0.05);
+      backdrop-filter: blur(24px) brightness(0.85);
+      -webkit-backdrop-filter: blur(24px) brightness(0.85);
+      border: none;
+      border-left: 1px solid rgba(236, 236, 236, 0.30);
+      padding: 1.25rem 1.4rem;
+      transition: background 0.35s ease, border-left-color 0.35s ease;
+      cursor: default;
+    }
+
+    .card--verre:hover {
+      background: rgba(236, 236, 236, 0.09);
+      border-left-color: rgba(236, 236, 236, 0.55);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VARIANT D — Dense
+       Very dark solid fill, no blur, right-edge inset shadow.
+       Typographic, editorial feel — total readability, no glass.
+       A reference to print / atlas aesthetics.
+    ══════════════════════════════════════════════════════════════ */
+    .card--dense {
+      background: rgba(10, 10, 10, 0.88);
+      border: 1px solid rgba(236, 236, 236, 0.06);
+      box-shadow: inset -2px 0 0 rgba(236, 236, 236, 0.08);
+      padding: 1.25rem 1.4rem;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      cursor: default;
+    }
+
+    .card--dense:hover {
+      background: rgba(16, 16, 16, 0.95);
+      border-color: rgba(236, 236, 236, 0.14);
+    }
+
+    /* ── Second set: show each on a cards-grid-3 for context ─────── */
+    .section-preview {
+      margin-top: 5rem;
+    }
+
+    .section-preview-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 2.5rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(236,236,236,0.1);
+    }
+
+    .grid-preview {
+      display: grid;
+      gap: 1px;
+    }
+
+    .grid-preview--3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-preview--4 { grid-template-columns: repeat(4, 1fr); }
+
+    /* ── Footer note ──────────────────────────────────────────────── */
+    .note {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(236,236,236,0.07);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      max-width: 680px;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <header>
+    <h1 class="page-title">Propositions de cartes</h1>
+    <p class="page-sub">Quatre directions — même contenu, même palette #0A0A0A / #ECECEC</p>
+  </header>
+
+  <!-- ── Single card comparison ────────────────────────────────── -->
+  <div class="variants">
+
+    <!-- A — Strate -->
+    <div class="variant-col">
+      <div class="variant-label">
+        <span class="variant-label__name">A · Strate</span>
+        <span class="variant-label__desc">Seules des lignes horizontales délimitent les cartes. Pas de fond, pas de verre. Le dessin territorial respire librement.</span>
+      </div>
+      <div class="variant-divider"></div>
+
+      <div class="card--strate">
+        <div class="card-meta">
+          <span class="card-tag">Exposition</span>
+          <time class="card-date">Sept. 2024</time>
+        </div>
+        <h3 class="card-title">Cap sur le ZAN&nbsp;!</h3>
+        <p class="card-text">Exposition itinérante commissionnée par le Ministère de la Transition Écologique. Inaugurée le 30 septembre 2024 à la Maison de l'Architecture à Paris.</p>
+      </div>
+
+      <div class="card--strate">
+        <div class="card-meta">
+          <span class="card-tag">Conférence</span>
+          <time class="card-date">Avril 2024</time>
+        </div>
+        <h3 class="card-title">Les sols reviennent dans les débats</h3>
+        <p class="card-text">Intervention sur le retour des sols au centre des enjeux d'aménagement du territoire.</p>
+      </div>
+
+      <div class="card--strate">
+        <div class="card-meta">
+          <span class="card-tag">Podcast</span>
+          <time class="card-date">2023</time>
+        </div>
+        <h3 class="card-title">Pour un urbanisme des sols</h3>
+        <p class="card-text">Épisode #68 du podcast Dixit.net sur l'approche de l'urbanisme des sols.</p>
+      </div>
+    </div>
+
+    <!-- B — Cadre -->
+    <div class="variant-col">
+      <div class="variant-label">
+        <span class="variant-label__name">B · Cadre</span>
+        <span class="variant-label__desc">Petites marques d'angle architecturales (L) aux quatre coins. Aucune boîte, aucun fond — seul le tracé délimite l'espace.</span>
+      </div>
+      <div class="variant-divider"></div>
+
+      <div class="card--cadre">
+        <div class="cadre-inner"></div>
+        <div class="card-meta">
+          <span class="card-tag">Exposition</span>
+          <time class="card-date">Sept. 2024</time>
+        </div>
+        <h3 class="card-title">Cap sur le ZAN&nbsp;!</h3>
+        <p class="card-text">Exposition itinérante commissionnée par le Ministère de la Transition Écologique. Inaugurée le 30 septembre 2024 à la Maison de l'Architecture à Paris.</p>
+      </div>
+
+      <div class="card--cadre">
+        <div class="cadre-inner"></div>
+        <div class="card-meta">
+          <span class="card-tag">Conférence</span>
+          <time class="card-date">Avril 2024</time>
+        </div>
+        <h3 class="card-title">Les sols reviennent dans les débats</h3>
+        <p class="card-text">Intervention sur le retour des sols au centre des enjeux d'aménagement du territoire.</p>
+      </div>
+
+      <div class="card--cadre">
+        <div class="cadre-inner"></div>
+        <div class="card-meta">
+          <span class="card-tag">Podcast</span>
+          <time class="card-date">2023</time>
+        </div>
+        <h3 class="card-title">Pour un urbanisme des sols</h3>
+        <p class="card-text">Épisode #68 du podcast Dixit.net sur l'approche de l'urbanisme des sols.</p>
+      </div>
+    </div>
+
+    <!-- C — Verre dépoli -->
+    <div class="variant-col">
+      <div class="variant-label">
+        <span class="variant-label__name">C · Verre dépoli</span>
+        <span class="variant-label__desc">Remplissage très léger (quasi-transparent) avec fort flou — comme du papier calque sur le plan. Seul le bord gauche est accentué.</span>
+      </div>
+      <div class="variant-divider"></div>
+
+      <div class="card--verre">
+        <div class="card-meta">
+          <span class="card-tag">Exposition</span>
+          <time class="card-date">Sept. 2024</time>
+        </div>
+        <h3 class="card-title">Cap sur le ZAN&nbsp;!</h3>
+        <p class="card-text">Exposition itinérante commissionnée par le Ministère de la Transition Écologique. Inaugurée le 30 septembre 2024 à la Maison de l'Architecture à Paris.</p>
+      </div>
+
+      <div class="card--verre">
+        <div class="card-meta">
+          <span class="card-tag">Conférence</span>
+          <time class="card-date">Avril 2024</time>
+        </div>
+        <h3 class="card-title">Les sols reviennent dans les débats</h3>
+        <p class="card-text">Intervention sur le retour des sols au centre des enjeux d'aménagement du territoire.</p>
+      </div>
+
+      <div class="card--verre">
+        <div class="card-meta">
+          <span class="card-tag">Podcast</span>
+          <time class="card-date">2023</time>
+        </div>
+        <h3 class="card-title">Pour un urbanisme des sols</h3>
+        <p class="card-text">Épisode #68 du podcast Dixit.net sur l'approche de l'urbanisme des sols.</p>
+      </div>
+    </div>
+
+    <!-- D — Dense -->
+    <div class="variant-col">
+      <div class="variant-label">
+        <span class="variant-label__name">D · Dense</span>
+        <span class="variant-label__desc">Fond très sombre et opaque, sans flou. Lisibilité maximale du texte. Référence au design éditorial et à l'atlas.</span>
+      </div>
+      <div class="variant-divider"></div>
+
+      <div class="card--dense">
+        <div class="card-meta">
+          <span class="card-tag">Exposition</span>
+          <time class="card-date">Sept. 2024</time>
+        </div>
+        <h3 class="card-title">Cap sur le ZAN&nbsp;!</h3>
+        <p class="card-text">Exposition itinérante commissionnée par le Ministère de la Transition Écologique. Inaugurée le 30 septembre 2024 à la Maison de l'Architecture à Paris.</p>
+      </div>
+
+      <div class="card--dense">
+        <div class="card-meta">
+          <span class="card-tag">Conférence</span>
+          <time class="card-date">Avril 2024</time>
+        </div>
+        <h3 class="card-title">Les sols reviennent dans les débats</h3>
+        <p class="card-text">Intervention sur le retour des sols au centre des enjeux d'aménagement du territoire.</p>
+      </div>
+
+      <div class="card--dense">
+        <div class="card-meta">
+          <span class="card-tag">Podcast</span>
+          <time class="card-date">2023</time>
+        </div>
+        <h3 class="card-title">Pour un urbanisme des sols</h3>
+        <p class="card-text">Épisode #68 du podcast Dixit.net sur l'approche de l'urbanisme des sols.</p>
+      </div>
+    </div>
+
+  </div><!-- /variants -->
+
+  <!-- ── Full-row context: show the same variant in a 3-col grid ── -->
+  <div class="section-preview">
+    <p class="section-preview-title">Aperçu en grille — A · Strate (6 cartes)</p>
+    <div class="grid-preview grid-preview--3">
+      <div class="card--strate">
+        <h3 class="card-title">Urbanisme des sols</h3>
+        <p class="card-text">La ville a transformé et investi les sols en profondeur. Comprendre ces strates permet de révéler des potentiels insoupçonnés pour le projet urbain.</p>
+      </div>
+      <div class="card--strate">
+        <h3 class="card-title">Zéro Artificialisation Nette</h3>
+        <p class="card-text">Le ZAN est une opportunité, mais tous les sols ne se valent pas et les normes doivent évoluer vers un aménagement économe.</p>
+      </div>
+      <div class="card--strate">
+        <h3 class="card-title">Du tracé à la trace</h3>
+        <p class="card-text">Passer du tracé à la trace, c'est privilégier l'existant comme matière première du projet, en lisant attentivement le territoire.</p>
+      </div>
+      <div class="card--strate">
+        <h3 class="card-title">Stratégies territoriales</h3>
+        <p class="card-text">Révéler les leviers déclencheurs de projet et les dispositifs opérationnels qui permettent d'agir avec justesse à toutes les échelles.</p>
+      </div>
+      <div class="card--strate">
+        <h3 class="card-title">Reconnaître les sols urbains</h3>
+        <p class="card-text">Les sols ne sont pas des surfaces vierges. Ils sont des palimpsestes — couches d'histoire et d'infrastructure superposées.</p>
+      </div>
+      <div class="card--strate">
+        <h3 class="card-title">Métabolisme urbain</h3>
+        <p class="card-text">Considérer les flux de matières, d'énergie et de sols comme des leviers de projet en intégrant les cycles écologiques.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-preview">
+    <p class="section-preview-title">Aperçu en grille — B · Cadre (6 cartes)</p>
+    <div class="grid-preview grid-preview--3" style="gap: 1.5rem;">
+      <div class="card--cadre"><div class="cadre-inner"></div>
+        <h3 class="card-title">Urbanisme des sols</h3>
+        <p class="card-text">La ville a transformé et investi les sols en profondeur. Comprendre ces strates permet de révéler des potentiels insoupçonnés pour le projet urbain.</p>
+      </div>
+      <div class="card--cadre"><div class="cadre-inner"></div>
+        <h3 class="card-title">Zéro Artificialisation Nette</h3>
+        <p class="card-text">Le ZAN est une opportunité, mais tous les sols ne se valent pas et les normes doivent évoluer vers un aménagement économe.</p>
+      </div>
+      <div class="card--cadre"><div class="cadre-inner"></div>
+        <h3 class="card-title">Du tracé à la trace</h3>
+        <p class="card-text">Passer du tracé à la trace, c'est privilégier l'existant comme matière première du projet, en lisant attentivement le territoire.</p>
+      </div>
+      <div class="card--cadre"><div class="cadre-inner"></div>
+        <h3 class="card-title">Stratégies territoriales</h3>
+        <p class="card-text">Révéler les leviers déclencheurs de projet et les dispositifs opérationnels qui permettent d'agir avec justesse à toutes les échelles.</p>
+      </div>
+      <div class="card--cadre"><div class="cadre-inner"></div>
+        <h3 class="card-title">Reconnaître les sols urbains</h3>
+        <p class="card-text">Les sols ne sont pas des surfaces vierges. Ils sont des palimpsestes — couches d'histoire et d'infrastructure superposées.</p>
+      </div>
+      <div class="card--cadre"><div class="cadre-inner"></div>
+        <h3 class="card-title">Métabolisme urbain</h3>
+        <p class="card-text">Considérer les flux de matières, d'énergie et de sols comme des leviers de projet en intégrant les cycles écologiques.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    Ces quatre propositions restent dans la palette #0A0A0A · #ECECEC et ne modifient pas la structure HTML.
+    Il suffit de remplacer la classe <code style="font-family:monospace;opacity:0.7">.card</code> par la variante choisie dans style.css,
+    ou de les combiner selon les sections (ex. Strate pour Réflexions, Dense pour Productions).
+  </p>
+
+</div><!-- /page -->
+</body>
+</html>
